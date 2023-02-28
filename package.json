@@ -1,0 +1,26 @@
+{
+  "name": "toadallyawesome",
+  "version": "1.0.0",
+  "description": "A game involving a toad. That's also a Ninja and must save the world.",
+  "main": "game.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JeremyMorgan/ToadallyAwesome.git"
+  },
+  "keywords": [
+    "game",
+    "phaser"
+  ],
+  "author": "Jeremy Morgan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JeremyMorgan/ToadallyAwesome/issues"
+  },
+  "homepage": "https://github.com/JeremyMorgan/ToadallyAwesome#readme",
+  "dependencies": {
+    "phaser": "^3.55.2"
+  }
+}
