@@ -9,3 +9,6 @@ This uses the [Phaser Game Framework](http://phaser.io/)
 
 We're using the [Pixel Adventure](https://pixelfrog-assets.itch.io/pixel-adventure-1) asset set from [Pixel Frog](https://pixelfrog-assets.itch.io/). 
 
+```
+browser-sync start --server --files "."
+```
