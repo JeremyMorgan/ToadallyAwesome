@@ -28,8 +28,11 @@ function preload (){
     this.load.tilemapTiledJSON('tilemap', 'assets/terrain.json');
 
     // player 
-    this.load.spritesheet('dude', 'assets/ninjatoad.png', { frameWidth: 32, frameHeight: 32 });
+    this.load.spritesheet('dude_run', 'assets/run.png', { frameWidth: 32, frameHeight: 32 });
+    this.load.spritesheet('dude_idle', 'assets/idle.png', { frameWidth: 32, frameHeight: 32 });
+    this.load.spritesheet('dude_jump', 'assets/jump.png', { frameWidth: 32, frameHeight: 32 });
 
+    //this.load.image('dude_jump', 'assets/jump.png');
 }
 
 // runs once the game starts
@@ -51,7 +54,7 @@ function create () {
 
     // create the player
     player = this.physics.add.sprite(32, 384, 'dude');
-    player.setCollideWorldBounds(true);
+    //player.setCollideWorldBounds(true);
     player.setBounce(0.2);
     
     // collider 
@@ -59,62 +62,99 @@ function create () {
     this.physics.add.collider(player, platformlayer);
 
     // player movement 
-
+    // running left 
     this.anims.create({
         key: 'left',
-        frames: this.anims.generateFrameNumbers('dude', { start: 19, end: 24 }),
+        frames: this.anims.generateFrameNumbers('dude_run', { start: 19, end: 24 }),
+        frameRate: 20,
+        repeat: -1
+    });
+
+    this.anims.create({
+        key: 'right',
+        frames: this.anims.generateFrameNumbers('dude_run', { start: 0, end: 5 }),
         frameRate: 20,
         repeat: -1
     });
 
     this.anims.create({
         key: 'turn',
-        frames: [{ key: 'dude', frame: 5 }],
+        frames: [{ key: 'dude_run', frame: 5 }],
         frameRate: 20
     });
 
     this.anims.create({
         key: 'facing_right',
-        frames: [{ key: 'dude', frame: 5 }],
-        frameRate: 20
+        //TODO: IDLE
+        frames: this.anims.generateFrameNumbers('dude_idle', { start: 11, end: 20 }),
+        frameRate: 20,
+        repeat: -1
     });
 
     this.anims.create({
+        //TODO: IDLE
         key: 'facing_left',
-        frames: [{ key: 'dude', frame: 12 }],
-        frameRate: 20
-    });
-
-
-    this.anims.create({
-        key: 'right',
-        frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 5 }),
+        frames: this.anims.generateFrameNumbers('dude_idle', { start: 0, end: 10 }),
         frameRate: 20,
         repeat: -1
     });
 
     this.anims.create({
         key: 'jump',
-        frames: this.anims.generateFrameNumbers('dude', { start: 6, end: 10 }),
+        frames: [{ key: 'dude_jump', frame: 0 }],
+        //frames: this.anims.generateFrameNumbers('dude_run', { start: 0, end: 0 }),
         frameRate: 20,
         repeat: -1
     });
 
-
     //  Input Events
     cursors = this.input.keyboard.createCursorKeys();
     this.directionFacing = "right";
+
+    console.log(player.getBounds());
 }
 
 // runs every frame
 function update () {
 
-    
+    inMotion = false;
+
+    var camera = this.cameras.main;
+
+    // check if player is offscreen
+    if (player.x < camera.worldView.x || 
+        player.x > camera.worldView.x + camera.worldView.width ||
+        player.y < camera.worldView.y ||
+        player.y > camera.worldView.y + camera.worldView.height) {
+        
+        console.log('Player is offscreen!');
+
+        if (player.x < camera.worldView.x)
+        {
+            player.x = camera.worldView.x + camera.worldView.width;
+        }else 
+        if (player.x > camera.worldView.x)
+        {
+            player.x = camera.worldView.x;
+        }
+        //TODO: Figure this out!
+        /*
+        if (player.y < camera.worldView.y)
+        {
+            player.y = camera.worldView.y + camera.worldView.height;
+        }else 
+        if (player.y > camera.worldView.y)
+        {
+            player.y = camera.worldView.y;
+        }
+        */
+    }
     
     if (cursors.left.isDown)
     {
         this.directionFacing = "left";
         player.setVelocityX(-160);
+        inMotion = true;
         player.anims.play('left', true);
         
     }
@@ -122,6 +162,7 @@ function update () {
     {
         this.directionFacing = "right";
         player.setVelocityX(160);
+        inMotion = true;
         player.anims.play('right', true);
     }
     else
@@ -132,15 +173,25 @@ function update () {
             player.anims.play('facing_right', true);
         }else {
             player.anims.play('facing_left', true);
-        }
-        
+        }        
     }
 
     //console.log(player.body.onFloor());
     //if (cursors.up.isDown)
     if (cursors.up.isDown && player.body.onFloor())
     {
-        player.setVelocityY(-330);
+        player.setVelocityY(-220);
+        console.log("Jump Animation");
         player.anims.play('jump', true);
+
+        /*
+        if(inMotion){
+            // something else 
+            player.anims.play('jump', true);
+        }else {
+            player.anims.play('jump', true);
+        }
+        */     
     }
+    //if (inMotion) { console.log("in motion"); }
 }
