@@ -5,10 +5,38 @@
     },
     "activeFile": "",
     "expandedProjectPaths": [
+        "."
     ],
+    "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
+        "": {
+            "scaleInEditor": 1
+        },
+        "C:/Users/jerem/repos/ToadallyAwesome/src/assets/terrain.json": {
+            "scale": 0.921796875,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 399.2202729044834,
+                "y": 372.0993304517332
+            }
+        },
+        "C:/Users/jerem/repos/ToadallyAwesome/src/assets/terrain.json#terrain": {
+            "scaleInDock": 1
+        },
+        "terrain.tmx": {
+            "scale": 0.921796875,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 399.2202729044834,
+                "y": -167.60742435799642
+            }
+        },
+        "terrain.tmx#terrain": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        }
     },
-    "last.exportedFilePath": "C:/Users/jerem/repos/NewToad/assets",
+    "last.exportedFilePath": "C:/Users/jerem/repos/ToadallyAwesome/src/assets",
     "last.imagePath": "C:/Users/jerem/repos/NewToad/assets",
     "map.height": 40,
     "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
@@ -18,8 +46,10 @@
     "map.width": 50,
     "openFiles": [
     ],
-    "project": "toadallyawesome.tiled-project",
+    "project": "ToadallyAwesome.tiled-project",
     "recentFiles": [
+        "C:/Users/jerem/repos/ToadallyAwesome/src/assets/terrain.json",
+        "terrain.tmx"
     ],
     "tileset.embedInMap": true,
     "tileset.tileSize": {
