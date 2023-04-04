@@ -22,6 +22,9 @@ class GameScene extends Phaser.Scene {
         
         // another enemy 
         this.load.spritesheet('madbird', 'assets/madbird.png', { frameWidth: 32, frameHeight: 32 });
+
+        // cherry
+        this.load.spritesheet('cherry', 'assets/cherry.png', { frameWidth: 32, frameHeight: 32 });
     
     }
     create() {
@@ -49,25 +52,27 @@ class GameScene extends Phaser.Scene {
         this.enemy = this.physics.add.sprite(750, 0, 'bird');
         this.enemy.setBounce(0.2);
 
-        // create an enemy (blue bird)
-        this.madbird = this.physics.add.sprite(400, 0, 'madbird');
-        this.madbird.setBounce(0.2);
-
-
         // colliders 
         this.physics.add.collider(this.player, this.groundlayer);
         this.physics.add.collider(this.player, this.platformlayer);
+        
         // enemy
         this.physics.add.collider(this.enemy, this.groundlayer);
         this.physics.add.collider(this.enemy, this.platformlayer);
 
         // enemy
-        this.physics.add.collider(this.madbird, this.groundlayer);
-        this.physics.add.collider(this.madbird, this.platformlayer);
+ 
 
         this.physics.add.collider(this.enemy, this.player, () => { this.scene.start('GameOverScene') });
-        this.physics.add.collider(this.madbird, this.player, () => { this.scene.start('GameOverScene') });
+        
+        // create a cherry group
+        this.cherries = this.physics.add.group();
 
+        // create a mad bird group
+        this.madBirds = this.physics.add.group();
+
+        // when the player collides with a cherry
+        this.physics.add.overlap(this.player, this.cherries, this.collectCherry, null, this);
 
         // player movement 
         // running left 
@@ -131,10 +136,23 @@ class GameScene extends Phaser.Scene {
             repeat: -1
             });
 
+        // cherry animation
+        this.anims.create({
+            key: 'cherry_spin',
+            frames: this.anims.generateFrameNumbers('cherry', { start: 0, end: 16 }),
+            frameRate: 20,
+            repeat: -1
+        });
+
+        // Scoring 
+        this.score = 0;
+        this.scoreText = this.add.text(16, 16,'score: 0', { fontSize: '32px', fill: '#000' });
+        
         //  Input Events
         this.cursors = this.input.keyboard.createCursorKeys();
         this.directionFacing = "right";
-
+        this.spawnCherries(7);
+        this.createMadBird();
 
     }
     update() {
@@ -145,7 +163,7 @@ class GameScene extends Phaser.Scene {
         // check if player is offscreen
         if (this.player.x < this.camera.worldView.x || 
             this.player.x > this.camera.worldView.x + this.camera.worldView.width ||
-            this.player.y < this.camera.worldView.y ||
+            //this.player.y < this.camera.worldView.y ||
             this.player.y > this.camera.worldView.y + this.camera.worldView.height) {
     
             if (this.player.x < this.camera.worldView.x)
@@ -201,19 +219,79 @@ class GameScene extends Phaser.Scene {
         if (this.enemy.x < -this.enemy.width / 2) {
             this.enemy.x = this.sys.game.config.width + this.enemy.width / 2;   
         }    
+        let screenWidth = this.sys.game.config.width;
 
+        if (this.madBirds.countActive(true) > 0){
+
+            this.madBirds.children.iterate(function (child) {
+                //child.enableBody(true, child.x, 0, true, true);
+                child.x -=2;
+                child.y -=1.5;
+                if (child.x < - child.width / 2) {
+                    child.x = screenWidth + child.width / 2;   
+                }
+            });
+
+            
+        }
         // move the enemy
-        this.madbird.x -=2;
-        this.madbird.y -=1.5;
-    
-        this.madbird.anims.play('madbird_fly', true);
-    
-        if (this.madbird.x < -this.madbird.width / 2) {
-            this.madbird.x = this.sys.game.config.width + this.madbird.width / 2;   
-        }   
+        //this.madbird.x -=2;
+        //this.madbird.y -=1.5;    
+        
+        //this.madbird.anims.play('madbird_fly', true);
+        
+        //if (this.madbird.x < -this.madbird.width / 2) {
+        //    this.madbird.x = this.sys.game.config.width + this.madbird.width / 2;   
+        //} 
+  
+``    }
 
-        //madbird_fly
+    spawnCherries(cherryAmount) {
 
+        for (let i = 0; i < cherryAmount; i++) {
+            let x = Phaser.Math.Between(0, this.sys.game.config.width);
+            let y = Phaser.Math.Between(0, 300);
 
+            let cherry = this.cherries.create(x, y, 'cherry');
+
+            cherry.setBounce(.5);
+            
+            cherry.setCollideWorldBounds(true);
+            cherry.anims.play('cherry_spin', true);
+
+            this.physics.add.collider(cherry, this.groundlayer);
+            this.physics.add.collider(cherry, this.platformlayer);
+        }
+    }
+
+    collectCherry(player, cherry) {
+        // called when player collides with a cherry
+
+        cherry.disableBody(true, true);
+        this.score += 100;
+        console.log(this.score);
+        this.scoreText.setText('score: ' + this.score);
+
+        if (this.cherries.countActive(true) === 0) {
+            this.spawnCherries(7);
+            this.createMadBird();
+        }
+
+    }
+
+    createMadBird() {
+            // create an enemy (mad bird)
+
+            console.log(this.madBirds.countActive());
+            let x = Phaser.Math.Between(0, this.sys.game.config.width);
+            let y = Phaser.Math.Between(0, 300);
+
+            let madbird = this.madBirds.create(x, y, 'madbird');
+
+            madbird.setBounce(.2);
+
+            this.physics.add.collider(madbird, this.groundlayer);
+            this.physics.add.collider(madbird, this.platformlayer);
+            this.physics.add.collider(madbird, this.player, () => { this.scene.start('GameOverScene') });
     }
 }
