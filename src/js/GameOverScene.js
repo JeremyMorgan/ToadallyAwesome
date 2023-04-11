@@ -26,6 +26,8 @@ class GameOverScene extends Phaser.Scene {
         gameOverImage.setOrigin(0.5);
         //gameOverText.setOrigin(0.5);
 
+        const gameOverScore = this.add.text(400, 100, 'Score:  '+ this.score);
+
         const resetButton = this.add.image(400, 400, 'resetButton').setInteractive();
         resetButton.on('pointerdown', this.resetGame, this);
     }

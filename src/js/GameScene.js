@@ -25,9 +25,17 @@ class GameScene extends Phaser.Scene {
 
         // cherry
         this.load.spritesheet('cherry', 'assets/cherry.png', { frameWidth: 32, frameHeight: 32 });
-    
+        
+        // ball 
+        this.load.spritesheet('ball', 'assets/ball.png', { frameWidth: 32, frameHeight: 32 });
+
+        // explosion 
+        this.load.spritesheet('explosion', 'assets/explosion.png', { frameWidth: 32, frameHeight: 32 });
+
+
     }
     create() {
+        this.enemyhit = 0;        
         // add the background image
         this.add.image(400, 300, 'sky');
 
@@ -43,6 +51,13 @@ class GameScene extends Phaser.Scene {
         this.platformlayer = this.map.createLayer('Platforms', this.tileset);
         this.platformlayer.setCollisionByExclusion(-1, true);
 
+        // create a cherry group
+        this.cherries = this.physics.add.group();
+
+        // create a mad bird group
+        this.madBirds = this.physics.add.group();
+
+
         // create the player
         this.player = this.physics.add.sprite(64, 384, 'dude');
         //player.setCollideWorldBounds(true);
@@ -52,25 +67,36 @@ class GameScene extends Phaser.Scene {
         this.enemy = this.physics.add.sprite(750, 0, 'bird');
         this.enemy.setBounce(0.2);
 
-        // colliders 
+        // create a ball for the player to throw 
+        this.ball = this.physics.add.sprite(this.player.x, this.player.y, 'ball');
+        this.ball.setBounce(0.8);
+        this.ball.setCollideWorldBounds(true);
+        this.ball.setVisible(false);
+        
+        // player colliders 
         this.physics.add.collider(this.player, this.groundlayer);
         this.physics.add.collider(this.player, this.platformlayer);
         
-        // enemy
+        // enemy colliders
         this.physics.add.collider(this.enemy, this.groundlayer);
         this.physics.add.collider(this.enemy, this.platformlayer);
 
-        // enemy
- 
-
-        this.physics.add.collider(this.enemy, this.player, () => { this.scene.start('GameOverScene') });
+        // if you touch an enemy 
+        this.physics.add.collider(this.enemy, this.player, () => { this.scene.start('GameOverScene', this.score) });
         
-        // create a cherry group
-        this.cherries = this.physics.add.group();
+        // ball colliders
+        this.physics.add.collider(this.ball, this.groundlayer);
+        this.physics.add.collider(this.ball, this.platformlayer);
+        this.physics.add.collider(this.ball, this.enemy, this.destroyEnemy, null, this);
+        this.physics.add.collider(this.ball, this.madBirds, this.destroyEnemy, null, this);
+       
+        if (this.madBirds.countActive(true) > 0){
+            this.madBirds.children.iterate((madbird) => {
+                this.physics.add.overlap(this.ball, madbird, this.destroyEnemy, null, this);
+            })
+        }
 
-        // create a mad bird group
-        this.madBirds = this.physics.add.group();
-
+        
         // when the player collides with a cherry
         this.physics.add.overlap(this.player, this.cherries, this.collectCherry, null, this);
 
@@ -143,6 +169,14 @@ class GameScene extends Phaser.Scene {
             frameRate: 20,
             repeat: -1
         });
+        // explosion when enemy is hit 
+        this.anims.create({
+            key: 'enemyexplode',
+            frames: this.anims.generateFrameNumbers('explosion', { start: 0, end: 4 }),
+            frameRate: 20,
+            repeat: 0
+        });
+
 
         // Scoring 
         this.score = 0;
@@ -151,13 +185,17 @@ class GameScene extends Phaser.Scene {
         //  Input Events
         this.cursors = this.input.keyboard.createCursorKeys();
         this.directionFacing = "right";
+
+        this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+
+        // create stuff 
         this.spawnCherries(7);
         this.createMadBird();
 
     }
     update() {
+        // player movement
         this.inMotion = false;
-
         this.camera = this.cameras.main;
     
         // check if player is offscreen
@@ -209,6 +247,18 @@ class GameScene extends Phaser.Scene {
             this.player.setVelocityY(-250);
             this.player.anims.play('jump', true);
         }
+
+        if (this.spacebar.isDown) {
+        
+            this.ball.setVisible(true);
+            this.ball.setPosition(this.player.x, this.player.y);
+            this.ball.setVelocityY(-50);
+            this.ball.setVelocityX(this.directionFacing == "right" ? 200 : -200);
+            //this.
+
+        }
+
+
         
         // move the enemy
         this.enemy.x -=2;
@@ -230,10 +280,11 @@ class GameScene extends Phaser.Scene {
                 if (child.x < - child.width / 2) {
                     child.x = screenWidth + child.width / 2;   
                 }
-            });
-
-            
+            });            
         }
+
+
+
         // move the enemy
         //this.madbird.x -=2;
         //this.madbird.y -=1.5;    
@@ -293,5 +344,28 @@ class GameScene extends Phaser.Scene {
             this.physics.add.collider(madbird, this.groundlayer);
             this.physics.add.collider(madbird, this.platformlayer);
             this.physics.add.collider(madbird, this.player, () => { this.scene.start('GameOverScene') });
+    }
+
+
+
+    destroyEnemy(ball, enemy) {
+        console.log("Enemy hit: " + this.enemyhit);
+
+        setTimeout(()=>{  }, 4000);
+        
+        this.enemyhit++;
+
+
+        if (this.enemyhit > 20) {
+            console.log('destroying enemy');
+            const explosion = this.add.sprite(enemy.x, enemy.y, 'explosion');
+            explosion.anims.play('enemyexplode', true);
+            explosion.once('animationcomplete', () => { explosion.destroy(); });
+            enemy.disableBody(true, true);
+            this.enemyhit = 0; 
+        } else {
+            enemy.setVelocityX("-30");
+            ball.setVelocityX("30");
+        }             
     }
 }
