@@ -12,6 +12,9 @@ var config = {
     scene: [OpeningScene,GameScene, GameOverScene]
 };
 
+// todo: player health
+// todo: fix enemy collisions
+// todo: Levels? 
 var game = new Phaser.Game(config);
-
+var score = 0;
 var directionFacing = "right";

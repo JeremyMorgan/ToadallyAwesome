@@ -1,5 +1,10 @@
 class GameOverScene extends Phaser.Scene {
 
+    init(data){
+        console.log(JSON.stringify(data));
+        this.score = data.score;
+    }
+
     constructor() {
         super({ key: 'GameOverScene' });
     }
@@ -26,7 +31,14 @@ class GameOverScene extends Phaser.Scene {
         gameOverImage.setOrigin(0.5);
         //gameOverText.setOrigin(0.5);
 
-        const gameOverScore = this.add.text(400, 100, 'Score:  '+ this.score);
+        const gameOverScore = this.add.text(400, 265, 'Final Score:  ' + this.score, {
+            fontFamily: 'Arial',
+            fontSize: '32px',
+            color: '#ffffff',
+            fontweight: 'bolder'
+        });
+        gameOverScore.setOrigin(0.5);
+        
 
         const resetButton = this.add.image(400, 400, 'resetButton').setInteractive();
         resetButton.on('pointerdown', this.resetGame, this);
