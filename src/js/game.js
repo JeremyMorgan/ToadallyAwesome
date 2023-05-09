@@ -15,6 +15,10 @@ var config = {
 // todo: player health
 // todo: fix enemy collisions
 // todo: Levels? 
-var game = new Phaser.Game(config);
-var score = 0;
-var directionFacing = "right";
+
+let game = new Phaser.Game(config);
+let score = 0;
+let scoreText = "score is: "
+let playerHealth = 100;
+let healthText;
+let directionFacing = "right";

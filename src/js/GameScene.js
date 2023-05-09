@@ -18,7 +18,7 @@ class GameScene extends Phaser.Scene {
         this.load.spritesheet('dude_jump', 'assets/jump.png', { frameWidth: 32, frameHeight: 32 });
 
         // enemy (blue bird)
-        this.load.spritesheet('bird', 'assets/bird-flying.png', { frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet('bluebird', 'assets/bird-flying.png', { frameWidth: 32, frameHeight: 32 });
         
         // another enemy 
         this.load.spritesheet('madbird', 'assets/madbird.png', { frameWidth: 32, frameHeight: 32 });
@@ -35,6 +35,7 @@ class GameScene extends Phaser.Scene {
 
     }
     create() {
+
         this.enemyhit = 0;        
         // add the background image
         this.add.image(400, 300, 'sky');
@@ -57,6 +58,8 @@ class GameScene extends Phaser.Scene {
         // create a mad bird group
         this.madBirds = this.physics.add.group();
 
+        // create a bluebird group 
+        this.blueBirds = this.physics.add.group();
 
         // create the player
         this.player = this.physics.add.sprite(64, 384, 'dude');
@@ -64,10 +67,10 @@ class GameScene extends Phaser.Scene {
         this.player.setBounce(0.2);
 
         // create an enemy (blue bird)
-        this.enemy = this.physics.add.sprite(750, 0, 'bird');
-        this.enemy.setData('health', 100);
-        this.enemy.setData("Name", "Blue Bird")
-        this.enemy.setBounce(0.2);
+        //this.enemy = this.physics.add.sprite(750, 0, 'bird');
+        //this.enemy.setData('health', 100);
+        //this.enemy.setData("Name", "Blue Bird")
+        //this.enemy.setBounce(0.2);
 
         // create a ball for the player to throw 
         this.ball = this.physics.add.sprite(this.player.x, this.player.y, 'ball');
@@ -80,30 +83,38 @@ class GameScene extends Phaser.Scene {
         this.physics.add.collider(this.player, this.platformlayer);
         
         // enemy colliders
-        this.physics.add.collider(this.enemy, this.groundlayer);
-        this.physics.add.collider(this.enemy, this.platformlayer);
+        //this.physics.add.collider(this.enemy, this.groundlayer);
+        //this.physics.add.collider(this.enemy, this.platformlayer);
 
         // if you touch an enemy 
-        this.physics.add.collider(this.enemy, this.player, () => { this.scene.start('GameOverScene', { score: this.score }) });
+        //this.physics.add.collider(this.enemy, this.player, this.hitPlayer);
         
         // ball colliders
         this.physics.add.collider(this.ball, this.groundlayer);
         this.physics.add.collider(this.ball, this.platformlayer);
-        this.physics.add.collider(this.ball, this.enemy, this.destroyEnemy, null, this);
+        this.physics.add.collider(this.ball, this.blueBirds, this.destroyEnemy, null, this);
         this.physics.add.collider(this.ball, this.madBirds, this.destroyEnemy, null, this);
        
+        // if the ball hits a mad bird
+        // TODO: See if we can tune this       
         if (this.madBirds.countActive(true) > 0){
             this.madBirds.children.iterate((madbird) => {
+                // TODO: how can I change settings with this.physics.add.overlap                                
                 this.physics.add.overlap(this.ball, madbird, this.destroyEnemy, null, this);
             })
         }
 
-        
+        if (this.blueBirds.countActive(true) > 0){
+            this.blueBirds.children.iterate((blueBird) => {
+                // TODO: how can I change settings with this.physics.add.overlap                                
+                this.physics.add.overlap(this.ball, blueBird, this.destroyEnemy, null, this);
+            })
+        }
+
         // when the player collides with a cherry
         this.physics.add.overlap(this.player, this.cherries, this.collectCherry, null, this);
 
-        // player movement 
-        // running left 
+        // player running left 
         this.anims.create({
             key: 'left',
             frames: this.anims.generateFrameNumbers('dude_run', { start: 19, end: 24 }),
@@ -111,6 +122,7 @@ class GameScene extends Phaser.Scene {
             repeat: -1
         });
 
+        // player running right
         this.anims.create({
             key: 'right',
             frames: this.anims.generateFrameNumbers('dude_run', { start: 0, end: 5 }),
@@ -124,6 +136,7 @@ class GameScene extends Phaser.Scene {
             frameRate: 20
         });
 
+        // player standing facing right
         this.anims.create({
             key: 'facing_right',
             //TODO: IDLE
@@ -132,6 +145,7 @@ class GameScene extends Phaser.Scene {
             repeat: -1
         });
 
+        // player standing facing left
         this.anims.create({
             //TODO: IDLE
             key: 'facing_left',
@@ -140,6 +154,7 @@ class GameScene extends Phaser.Scene {
             repeat: -1
         });
 
+        // player jump
         this.anims.create({
             key: 'jump',
             frames: [{ key: 'dude_jump', frame: 0 }],
@@ -151,18 +166,18 @@ class GameScene extends Phaser.Scene {
         // enemy animation
         this.anims.create({
             key: 'bird_fly',
-            frames: this.anims.generateFrameNumbers('bird', { start: 0, end: 8 }),
+            frames: this.anims.generateFrameNumbers('bluebird', { start: 0, end: 8 }),
             frameRate: 20,
             repeat: -1
         });
 
-        // enemy animation
+        // mad bird animation
         this.anims.create({
             key: 'madbird_fly',
             frames: this.anims.generateFrameNumbers('madbird', { start: 0, end: 8 }),
             frameRate: 20,
             repeat: -1
-            });
+        });
 
         // cherry animation
         this.anims.create({
@@ -181,8 +196,11 @@ class GameScene extends Phaser.Scene {
 
 
         // Scoring 
-        this.score = 0;
-        this.scoreText = this.add.text(16, 16,'score: 0', { fontSize: '16px', fill: '#ffffff', fontFamily: 'Arial' });
+        score = 0;
+        scoreText = this.add.text(16, 16,'score: 0', { fontSize: '16px', fill: '#ffffff', fontFamily: 'Arial' });
+        
+        //this.playerHealth = 100;
+        this.healthText = this.add.text(16, 50, 'health: 100', { fontSize: '16px', fill: '#ffffff', fontFamily: 'Arial' });
         
         //  Input Events
         this.cursors = this.input.keyboard.createCursorKeys();
@@ -193,10 +211,14 @@ class GameScene extends Phaser.Scene {
         // create stuff 
         this.spawnCherries(7);
         this.createMadBird();
+        this.createBlueBird();
 
     }
+
     update() {
 
+        this.healthText.setText('health: ' + playerHealth);
+        
         // player movement
         this.inMotion = false;
         this.camera = this.cameras.main;
@@ -204,7 +226,6 @@ class GameScene extends Phaser.Scene {
         // check if player is offscreen
         if (this.player.x < this.camera.worldView.x || 
             this.player.x > this.camera.worldView.x + this.camera.worldView.width ||
-            //this.player.y < this.camera.worldView.y ||
             this.player.y > this.camera.worldView.y + this.camera.worldView.height) {
     
             if (this.player.x < this.camera.worldView.x)
@@ -217,6 +238,7 @@ class GameScene extends Phaser.Scene {
             }
         }
         
+        // move player
         if (this.cursors.left.isDown)
         {
             this.directionFacing = "left";
@@ -243,39 +265,26 @@ class GameScene extends Phaser.Scene {
             }        
         }
     
-        //console.log(player.body.onFloor());
-        //if (cursors.up.isDown)
+        // player jump
         if (this.cursors.up.isDown && this.player.body.onFloor())
         {
             this.player.setVelocityY(-250);
             this.player.anims.play('jump', true);
         }
 
+        // launch the ball
         if (this.spacebar.isDown) {
         
             this.ball.setVisible(true);
             this.ball.setPosition(this.player.x, this.player.y);
             this.ball.setVelocityY(-50);
             this.ball.setVelocityX(this.directionFacing == "right" ? 200 : -200);
-            //this.
+        }        
 
-        }
-
-
-        
-        // move the enemy
-        this.enemy.x -=2;
-        this.enemy.y -=1.5;
-    
-        this.enemy.anims.play('bird_fly', true);
-    
-        if (this.enemy.x < -this.enemy.width / 2) {
-            this.enemy.x = this.sys.game.config.width + this.enemy.width / 2;   
-        }    
         let screenWidth = this.sys.game.config.width;
 
+        // mad bird 
         if (this.madBirds.countActive(true) > 0){
-
             this.madBirds.children.iterate(function (child) {
                 //child.enableBody(true, child.x, 0, true, true);
                 child.x -=2;
@@ -285,8 +294,19 @@ class GameScene extends Phaser.Scene {
                 }
             });            
         }
+        // mad bird 
+        if (this.blueBirds.countActive(true) > 0){
+            this.blueBirds.children.iterate(function (child) {
+                //child.enableBody(true, child.x, 0, true, true);
+                child.x -=2;
+                child.y -=1.5;
+                if (child.x < - child.width / 2) {
+                    child.x = screenWidth + child.width / 2;   
+                }
+            });            
+        }
   
-    }
+    } // end update
 
     spawnCherries(cherryAmount) {
 
@@ -310,20 +330,20 @@ class GameScene extends Phaser.Scene {
         // called when player collides with a cherry
 
         cherry.disableBody(true, true);
-        this.score += 100;
-        this.scoreText.setText('score: ' + this.score);
+        score += 100;
+        scoreText.setText('score: ' + score);
 
         if (this.cherries.countActive(true) === 0) {
             this.spawnCherries(7);
             this.createMadBird();
+            this.createBlueBird();
         }
-
     }
 
     createMadBird() {
             // create an enemy (mad bird)
 
-            console.log(this.madBirds.countActive());
+            //console.log(this.madBirds.countActive());
             let x = Phaser.Math.Between(0, this.sys.game.config.width);
             let y = Phaser.Math.Between(0, 300);
 
@@ -334,32 +354,42 @@ class GameScene extends Phaser.Scene {
            
             this.physics.add.collider(madbird, this.groundlayer);
             this.physics.add.collider(madbird, this.platformlayer);
-            this.physics.add.collider(madbird, this.player, () => { this.scene.start('GameOverScene', { score: this.score }) });
+            this.physics.add.collider(madbird, this.player, this.hitPlayer);
+
     }
+
+    createBlueBird() {
+        // create a blue bird
+        let x = Phaser.Math.Between(0, this.sys.game.config.width);
+        let y = Phaser.Math.Between(0, 300);
+
+        let bluebird = this.blueBirds.create(x, y, 'bluebird');
+        bluebird.setData("health", 100);
+        bluebird.setData("Name", "Blue Bird");          
+        bluebird.setBounce(.2);
+       
+        this.physics.add.collider(bluebird, this.groundlayer);
+        this.physics.add.collider(bluebird, this.platformlayer);
+        this.physics.add.collider(bluebird, this.player, this.hitPlayer);
+    }    
 
     destroyEnemy(ball, enemy) {
 
-        //console.log(JSON.stringify(enemy));
-        //console.log("We hit: " + enemy.getData("Name"));
-        //console.log("Health: " + enemy.getData("health"));
-
-        //{"name":"","type":"Sprite","x":328.66666666666686,"y":342.7819999999999,"depth":0,"scale":{"x":1,"y":1},"origin":{"x":0.5,"y":0.5},"flipX":false,"flipY":false,"rotation":0,"alpha":1,"visible":true,"blendMode":0,"textureKey":"madbird","frameKey":0,"data":{}}
-
-        //console.log("Enemy hit: " + this.enemyhit);
-
-        setTimeout(()=>{  }, 4000);
+        // after ball hits enemy, it takes off
         ball.setVelocityX(-500);
 
-        //this.enemyhit = this.enemyhit + 1;
+        this.enemyhit = this.enemyhit + 1;
 
         let health = enemy.getData("health");
 
         enemy.setData("health", health - 50);
 
+        enemy.setVelocityX("-30");
+
         if (health == 0) {
-            console.log('destroying enemy');
-            this.score = this.score + 100;
-            this.scoreText.setText('score:'+ this.score);
+            console.log('destroying enemy' + enemy.getData("Name"));
+            score = score + 100;
+            scoreText.setText('score:'+ score);
             const explosion = this.add.sprite(enemy.x, enemy.y, 'explosion');
             explosion.anims.play('enemyexplode', true);
             explosion.once('animationcomplete', () => { explosion.destroy(); });
@@ -369,5 +399,24 @@ class GameScene extends Phaser.Scene {
             enemy.setVelocityX("-30");
             ball.setVelocityX("30");
         }             
+    }
+
+    hitPlayer(){
+
+        console.log("Player was hit!");
+        console.log("Player Health: " + playerHealth);
+        console.log("Score: " + score);
+
+        if (playerHealth == 100){
+            playerHealth = playerHealth - 50;
+            console.log("Player Health: " + playerHealth);
+        }else if (playerHealth == 50){
+            console.log("Should be Game Over!")
+            game.scene.start('GameOverScene', { score: score })
+        }
+    }
+
+    gaveOver(){
+        
     }
 }
