@@ -3,6 +3,7 @@ var config = {
     width: 800,
     height: 640,
     physics: {
+    
         default: 'arcade',
         arcade: {
             gravity: { y: 300 },
@@ -14,6 +15,7 @@ var config = {
 
 // todo: player health
 // todo: fix enemy collisions
+// todo: investigate matter mode
 // todo: Levels? 
 
 let game = new Phaser.Game(config);

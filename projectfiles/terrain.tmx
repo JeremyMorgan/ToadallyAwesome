@@ -4,7 +4,10 @@
   <export target="../assets/terrain.json" format="json"/>
  </editorsettings>
  <tileset firstgid="1" name="terrain" tilewidth="16" tileheight="16" tilecount="242" columns="22">
-  <image source="../assets/terrain.png" width="352" height="176"/>
+  <image source="Terrain/Terrain (16x16).png" width="352" height="176"/>
+ </tileset>
+ <tileset firstgid="243" name="Terrain" tilewidth="16" tileheight="16" tilecount="242" columns="22">
+  <image source="Terrain/Terrain (16x16).png" width="352" height="176"/>
  </tileset>
  <layer id="1" name="GroundLayer" width="50" height="40">
   <data encoding="csv">

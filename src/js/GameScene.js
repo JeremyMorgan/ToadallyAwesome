@@ -81,14 +81,8 @@ class GameScene extends Phaser.Scene {
         // player colliders 
         this.physics.add.collider(this.player, this.groundlayer);
         this.physics.add.collider(this.player, this.platformlayer);
-        
-        // enemy colliders
-        //this.physics.add.collider(this.enemy, this.groundlayer);
-        //this.physics.add.collider(this.enemy, this.platformlayer);
 
-        // if you touch an enemy 
-        //this.physics.add.collider(this.enemy, this.player, this.hitPlayer);
-        
+      
         // ball colliders
         this.physics.add.collider(this.ball, this.groundlayer);
         this.physics.add.collider(this.ball, this.platformlayer);
@@ -99,17 +93,32 @@ class GameScene extends Phaser.Scene {
         // TODO: See if we can tune this       
         if (this.madBirds.countActive(true) > 0){
             this.madBirds.children.iterate((madbird) => {
-                // TODO: how can I change settings with this.physics.add.overlap                                
-                this.physics.add.overlap(this.ball, madbird, this.destroyEnemy, null, this);
+                this.physics.world.enable(madbird);                              
+                this.physics.add.collider(this.ball, madbird, this.destroyEnemy, null, this, 
+                {
+                    maxVelocity: 100             
+                });                
             })
-        }
+        }        
 
         if (this.blueBirds.countActive(true) > 0){
             this.blueBirds.children.iterate((blueBird) => {
-                // TODO: how can I change settings with this.physics.add.overlap                                
-                this.physics.add.overlap(this.ball, blueBird, this.destroyEnemy, null, this);
+                this.physics.world.enable(blueBird);  
+                this.physics.add.collider(this.ball, blueBird, this.destroyEnemy, null, this,);                               
             })
         }
+
+        // TODO: Enable this
+        /*
+        this.physics.world.enable(this.ball);
+        this.physics.world.enable(this.madBirds);
+        
+        this.madBirds.children.iterate((madbird) => {
+            this.physics.world.enable(madbird);
+        });
+        */ 
+        
+        this.physics.add.overlap(this.ball, this.madBirds, this.destroyEnemy, null, this);
 
         // when the player collides with a cherry
         this.physics.add.overlap(this.player, this.cherries, this.collectCherry, null, this);
@@ -381,12 +390,12 @@ class GameScene extends Phaser.Scene {
         this.enemyhit = this.enemyhit + 1;
 
         let health = enemy.getData("health");
-
         enemy.setData("health", health - 50);
 
+        console.log('enemy health: ' + health);
         enemy.setVelocityX("-30");
 
-        if (health == 0) {
+        if (health <= 0) {
             console.log('destroying enemy' + enemy.getData("Name"));
             score = score + 100;
             scoreText.setText('score:'+ score);
