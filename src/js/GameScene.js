@@ -66,48 +66,14 @@ class GameScene extends Phaser.Scene {
         //player.setCollideWorldBounds(true);
         this.player.setBounce(0.2);
 
-        // create an enemy (blue bird)
-        //this.enemy = this.physics.add.sprite(750, 0, 'bird');
-        //this.enemy.setData('health', 100);
-        //this.enemy.setData("Name", "Blue Bird")
-        //this.enemy.setBounce(0.2);
-
         // create a ball for the player to throw 
         this.ball = this.physics.add.sprite(this.player.x, this.player.y, 'ball');
         this.ball.setBounce(0.8);
         this.ball.setCollideWorldBounds(true);
-        this.ball.setVisible(false);
-        
-        // player colliders 
-        this.physics.add.collider(this.player, this.groundlayer);
-        this.physics.add.collider(this.player, this.platformlayer);
+        this.ball.setVisible(false);     
 
-      
-        // ball colliders
-        this.physics.add.collider(this.ball, this.groundlayer);
-        this.physics.add.collider(this.ball, this.platformlayer);
-        this.physics.add.collider(this.ball, this.blueBirds, this.destroyEnemy, null, this);
-        this.physics.add.collider(this.ball, this.madBirds, this.destroyEnemy, null, this);
+
        
-        // if the ball hits a mad bird
-        // TODO: See if we can tune this       
-        if (this.madBirds.countActive(true) > 0){
-            this.madBirds.children.iterate((madbird) => {
-                this.physics.world.enable(madbird);                              
-                this.physics.add.collider(this.ball, madbird, this.destroyEnemy, null, this, 
-                {
-                    maxVelocity: 100             
-                });                
-            })
-        }        
-
-        if (this.blueBirds.countActive(true) > 0){
-            this.blueBirds.children.iterate((blueBird) => {
-                this.physics.world.enable(blueBird);  
-                this.physics.add.collider(this.ball, blueBird, this.destroyEnemy, null, this,);                               
-            })
-        }
-
         // TODO: Enable this
         /*
         this.physics.world.enable(this.ball);
@@ -116,12 +82,7 @@ class GameScene extends Phaser.Scene {
         this.madBirds.children.iterate((madbird) => {
             this.physics.world.enable(madbird);
         });
-        */ 
-        
-        this.physics.add.overlap(this.ball, this.madBirds, this.destroyEnemy, null, this);
-
-        // when the player collides with a cherry
-        this.physics.add.overlap(this.player, this.cherries, this.collectCherry, null, this);
+        */                
 
         // player running left 
         this.anims.create({
@@ -218,13 +179,18 @@ class GameScene extends Phaser.Scene {
         this.spacebar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
         // create stuff 
-        this.spawnCherries(7);
+       
         this.createMadBird();
         this.createBlueBird();
 
+        this.collider = new CollisionManager(this, this.player, this.groundlayer, this.platformlayer, this.blueBirds, this.madBirds, this.ball, this.cherries, this.physics);
+        this.collider.create();
+
+        this.spawnCherries(7);
+
     }
 
-    update() {
+    update() {        
 
         this.healthText.setText('health: ' + playerHealth);
         
@@ -330,11 +296,10 @@ class GameScene extends Phaser.Scene {
             cherry.setCollideWorldBounds(true);
             cherry.anims.play('cherry_spin', true);
 
-            this.physics.add.collider(cherry, this.groundlayer);
-            this.physics.add.collider(cherry, this.platformlayer);
+            this.collider.createCherryColliders(cherry);
         }
     }
-
+  
     collectCherry(player, cherry) {
         // called when player collides with a cherry
 
@@ -343,28 +308,24 @@ class GameScene extends Phaser.Scene {
         scoreText.setText('score: ' + score);
 
         if (this.cherries.countActive(true) === 0) {
-            this.spawnCherries(7);
-            this.createMadBird();
-            this.createBlueBird();
+            this.scene.spawnCherries(7);
+            this.scene.createMadBird();
+            this.scene.createBlueBird();
         }
-    }
+    }    
 
     createMadBird() {
-            // create an enemy (mad bird)
+        // create an enemy (mad bird)
 
-            //console.log(this.madBirds.countActive());
-            let x = Phaser.Math.Between(0, this.sys.game.config.width);
-            let y = Phaser.Math.Between(0, 300);
+        //console.log(this.madBirds.countActive());        
+        let x = Phaser.Math.Between(0, this.sys.game.config.width);
+        let y = Phaser.Math.Between(0, 300);
 
-            let madbird = this.madBirds.create(x, y, 'madbird');
-            madbird.setData("health", 100);
-            madbird.setData("Name", "Mad Bird");          
-            madbird.setBounce(.2);
-           
-            this.physics.add.collider(madbird, this.groundlayer);
-            this.physics.add.collider(madbird, this.platformlayer);
-            this.physics.add.collider(madbird, this.player, this.hitPlayer);
-
+        let madbird = this.madBirds.create(x, y, 'madbird');
+        madbird.setData("health", 100);
+        madbird.setData("name", Phaser.Math.RND.uuid());          
+        madbird.setBounce(.2);
+        console.log("Madbird count: " + this.madBirds.countActive(true));
     }
 
     createBlueBird() {
@@ -374,41 +335,9 @@ class GameScene extends Phaser.Scene {
 
         let bluebird = this.blueBirds.create(x, y, 'bluebird');
         bluebird.setData("health", 100);
-        bluebird.setData("Name", "Blue Bird");          
+        bluebird.setData("name", Phaser.Math.RND.uuid());          
         bluebird.setBounce(.2);
-       
-        this.physics.add.collider(bluebird, this.groundlayer);
-        this.physics.add.collider(bluebird, this.platformlayer);
-        this.physics.add.collider(bluebird, this.player, this.hitPlayer);
-    }    
-
-    destroyEnemy(ball, enemy) {
-
-        // after ball hits enemy, it takes off
-        ball.setVelocityX(-500);
-
-        this.enemyhit = this.enemyhit + 1;
-
-        let health = enemy.getData("health");
-        enemy.setData("health", health - 50);
-
-        console.log('enemy health: ' + health);
-        enemy.setVelocityX("-30");
-
-        if (health <= 0) {
-            console.log('destroying enemy' + enemy.getData("Name"));
-            score = score + 100;
-            scoreText.setText('score:'+ score);
-            const explosion = this.add.sprite(enemy.x, enemy.y, 'explosion');
-            explosion.anims.play('enemyexplode', true);
-            explosion.once('animationcomplete', () => { explosion.destroy(); });
-            enemy.disableBody(true, true);
-            this.enemyhit = 0;            
-        } else {            
-            enemy.setVelocityX("-30");
-            ball.setVelocityX("30");
-        }             
-    }
+    } 
 
     hitPlayer(){
 
@@ -425,7 +354,4 @@ class GameScene extends Phaser.Scene {
         }
     }
 
-    gaveOver(){
-        
-    }
 }

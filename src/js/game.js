@@ -1,4 +1,4 @@
-var config = {
+const config = {
     type: Phaser.AUTO,
     width: 800,
     height: 640,
@@ -10,7 +10,7 @@ var config = {
             debug: false
         }
     },
-    scene: [OpeningScene,GameScene, GameOverScene]
+    scene: [OpeningScene,GameScene, GameOverScene, CollisionManager]
 };
 
 // todo: player health

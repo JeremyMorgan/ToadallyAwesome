@@ -22,7 +22,9 @@ class OpeningScene extends Phaser.Scene {
         startButton.setInteractive();
 
         startButton.on('pointerdown', () => {
-            this.scene.start('GameScene');
+            console.log("Starting Main Game Scene");            
+            this.scene.start('GameScene');    
+            this.scene.start('CollisionManager');        
         });
     }
 }
