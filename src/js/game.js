@@ -10,7 +10,7 @@ const config = {
             debug: false
         }
     },
-    scene: [OpeningScene,GameScene, GameOverScene, CollisionManager]
+    scene: [OpeningScene, GameScene, GameOverScene, CollisionManager]
 };
 
 // todo: player health

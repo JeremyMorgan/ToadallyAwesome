@@ -32,7 +32,6 @@ class GameScene extends Phaser.Scene {
         // explosion 
         this.load.spritesheet('explosion', 'assets/explosion.png', { frameWidth: 32, frameHeight: 32 });
 
-
     }
     create() {
 
@@ -71,19 +70,16 @@ class GameScene extends Phaser.Scene {
         this.ball.setBounce(0.8);
         this.ball.setCollideWorldBounds(true);
         this.ball.setVisible(false);     
-
-
        
         // TODO: Enable this
-        /*
+        
         this.physics.world.enable(this.ball);
         this.physics.world.enable(this.madBirds);
         
         this.madBirds.children.iterate((madbird) => {
             this.physics.world.enable(madbird);
         });
-        */                
-
+        
         // player running left 
         this.anims.create({
             key: 'left',
